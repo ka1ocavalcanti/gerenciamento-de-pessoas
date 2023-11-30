@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<h:head>
+
+	
+	<ui:define name="titulo">Cadastro de Pessoas</ui:define>
+
+	<h:outputStylesheet library="styles" name="estilo.css" />
+
+	<f:metadata>
+		<f:viewAction action="#{gestaoPessoasBean.todasPessoas}" />
+	</f:metadata>
+
+</h:head>
+
+<body>
+	<h:form id="frm">
+		<p:confirmDialog global="true">
+			<p:commandButton value="Sim" icon="fa fa-check" 
+				styleClass="ui-confirmdialog-yes"/>
+				
+			<p:commandButton value="Não" icon="fa fa-remove" 
+				styleClass="ui-confirmdialog-no"/>
+				
+		</p:confirmDialog>
+		<header>
+			<div id="nav-barra">
+				<div id="logo">Logo</div>
+
+				<h:commandLink value="Home" action="Home?faces-redirect=true" styleClass="nav-link" />
+				<h:commandLink value="Cadastrar" action="GestaoPessoas?faces-redirect=true"
+					styleClass="nav-link" />
+
+			</div>
+		</header>
+		<h1 id="Pessoas">Pessoas</h1>
+		<div id="linha-horizontal"></div>
+		
+		<p:messages id="messages"/>
+		
+		<p:toolbar id="toolbar">
+				<f:facet name="left">
+					<p:inputText id="termoPesquisa" placeholder="Digite aqui um termo para pesquisa..." 
+					size="30" value="#{gestaoPessoasBean.termoPesquisa}"/>
+					
+					<p:commandButton value="Pesquisar" icon="fa fa-search" 
+						actionListener="#{gestaoPessoasBean.pesquisar}" update="pessoasDataTable messages"
+						process="@this termoPesquisa"/>
+					
+					<span class="ui-separator">
+						<span class="ui-icon ui-icon-grip-dotted-vertical"/>
+					</span>
+					
+					<p:commandButton value="Nova" icon="fa fa-plus" 
+						actionListener="#{gestaoPessoasBean.prepararNovaPessoa}"
+						oncomplete="PF('pessoaDialogWidgetVar').show()"
+						update="pessoaDialog" process="@this">
+						<p:resetInput target="pessoaDialog" />
+					</p:commandButton>
+					
+					<span class="ui-separator">
+						<span class="ui-icon ui-icon-grip-dotted-vertical"/>
+					</span>
+					
+					<p:commandButton title="Editar" icon="fa fa-edit" 
+						disabled="#{not gestaoPessoasBean.pessoaSeleciona}"
+						actionListener="#{gestaoPessoasBean.prepararEdicao}"
+						oncomplete="PF('pessoaDialogWidgetVar').show()"
+						update="pessoaDialog" process="@this">
+						<p:resetInput target="pessoaDialog" />
+					</p:commandButton>
+						
+					<p:commandButton title="Excluir" icon="fa fa-trash" 
+						disabled="#{not gestaoPessoasBean.pessoaSeleciona}"
+						actionListener="#{gestaoPessoasBean.excluir}"
+						update="messages pessoasDataTable toolbar"
+						process="@this">
+						<p:confirm icon="ui-icon-alert" header="Confirmação de exclusão"
+							message="Posso excluir essa pessoa?" />
+					</p:commandButton>
+					
+					<span class="ui-separator">
+						<span class="ui-icon ui-icon-grip-dotted-vertical"/>
+					</span>
+					
+				</f:facet>			
+		</p:toolbar>
+		
+		<p:spacer height="20px"/>
+		
+		<p:dataTable id="pessoasDataTable" value="#{gestaoPessoasBean.listaPessoas}" var="pessoa"
+			emptyMessage="Nenhuma informação a ser exibida"
+			paginator="true" rows="10" paginatorPosition="bottom"
+			selectionMode="single" selection="#{gestaoPessoasBean.pessoa}" rowKey="#{pessoa.id}">
+			
+			<p:ajax event="rowSelect" update="frm:toolbar" />
+			
+			<p:ajax event="rowUnselect" update="frm:toolbar" />
+			
+			<p:column headerText="Nome" sortBy="#{pessoa.nome}">
+				<h:outputText value="#{pessoa.nome}" />
+			</p:column>
+
+			<p:column headerText="Matricula">
+				<h:outputText value="#{pessoa.matricula}" />
+			</p:column>
+		</p:dataTable>
+		
+		<p:dialog id="pessoaDialog" header="Nova pessoa" widgetVar="pessoaDialogWidgetVar" modal="true" 
+			resizable="false" closeOnEscape="true">
+			<p:messages id="pessoaMessages" />
+			
+			<p:defaultCommand target="salvarCommandButton" scope="pessoaDialog"/>
+			
+			<h:panelGrid id="pessoaPanelGrid" columns="2"
+				rendered="#{gestaoPessoasBean.pessoa ne null}">
+
+				<p:outputLabel value="Matricula: " for="matricula" />
+				<p:inputText id="matricula" size="15" maxlength="5" 
+					value="#{gestaoPessoasBean.pessoa.matricula}"/>
+				
+				<p:outputLabel value="Nome: " for="nome" />
+				<p:inputText id="nome" size="80" maxlength="80"
+					value="#{gestaoPessoasBean.pessoa.nome}"/>
+					
+				<p:outputLabel value="E-mail: " for="email" />
+				<p:inputText id="email" size="80" maxlength="80"
+					value="#{gestaoPessoasBean.pessoa.email}"/>
+				
+				<p:outputLabel value="Telefone: " for="telefone" />
+				<p:inputMask id="telefone" mask="(99)99999-9999" size="18" maxlength="18" 
+					value="#{gestaoPessoasBean.pessoa.telefone}"/>
+					
+				<p:outputLabel value="Descrição de Registro: " for="descricao" />
+				<p:inputText id="descricao" size="80" maxlength="120" 
+					value="#{gestaoPessoasBean.registro.descricao}"/>
+				
+				<p:outputLabel value="Data de Registro: " for="data" />
+				<p:calendar id="data" pattern="dd/MM/yyyy" size="30"
+					value="#{gestaoPessoasBean.registro.data}"/>
+				
+				<h:outputLabel />
+				<p:commandButton id="salvarCommandButton" value="Salvar" actionListener="#{gestaoPessoasBean.salvar}"
+					update="pessoaPanelGrid pessoaMessages"
+					oncomplete="if (!args.validationFailed) PF('pessoaDialogWidgetVar').hide()" process="pessoaDialog"/>
+			</h:panelGrid>
+		</p:dialog>
+		
+	</h:form>
+
+</body>
+
+</html>
